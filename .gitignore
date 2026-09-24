@@ -1,0 +1,24 @@
+# Roblox / Lua
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+*.rbxl.lock
+*.rbxlx.lock
+sourcemap.json
+--sourcemap.json
+
+# Runtime configs (keep folder)
+configs/*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.log
+*.tmp
+
+# Node tooling (optional Rojo wrappers)
+node_modules/

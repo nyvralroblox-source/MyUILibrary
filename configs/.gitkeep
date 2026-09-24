@@ -1,0 +1,2 @@
+# Runtime JSON lives here (flags, theme, window position).
+# Files matching *.json are gitignored.
