@@ -1,6 +1,6 @@
 -- Camera Mods Module
 -- Compatible avec shift lock et view fps
--- Auteur: [VOTRE_USERNAME]
+-- Auteur: nyvralroblox
 
 local CameraMods = {}
 CameraMods.Enabled = false
@@ -9,6 +9,7 @@ CameraMods.CameraOffset = Vector3.new(0, 0, 0)
 CameraMods.FOV = 70
 CameraMods.OriginalFOV = 70
 CameraMods.CameraType = nil
+CameraMods.OriginalCFrame = nil
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -25,10 +26,10 @@ local function EnableCameraMods()
     -- Sauvegarder l'état original
     CameraMods.OriginalFOV = Workspace.CurrentCamera.FieldOfView
     CameraMods.CameraType = Workspace.CurrentCamera.CameraType
+    CameraMods.OriginalCFrame = Workspace.CurrentCamera.CFrame
     
-    -- Changer le type de caméra sans casser shift lock
-    -- On utilise Scriptable qui permet un contrôle total tout en préservant les contrôles
-    Workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+    -- IMPORTANT: Ne PAS changer le CameraType pour préserver shift lock
+    -- On garde le type actuel et on modifie seulement la position
     
     -- Synchroniser la caméra avec le personnage pour préserver shift lock
     CameraMods.Connection = RunService.RenderStepped:Connect(function()
@@ -41,17 +42,14 @@ local function EnableCameraMods()
         local head = character:FindFirstChild("Head")
         
         if humanoidRootPart and head then
-            -- Calculer la position de la caméra en préservant la rotation du personnage
-            local cameraCFrame = CFrame.new(
-                humanoidRootPart.Position + CameraMods.CameraOffset,
-                head.Position
-            )
-            
-            -- Appliquer la rotation actuelle de la caméra pour préserver view fps
+            -- Obtenir la rotation actuelle de la caméra (préserve view fps)
             local currentRotation = Workspace.CurrentCamera.CFrame - Workspace.CurrentCamera.CFrame.Position
-            Workspace.CurrentCamera.CFrame = CFrame.new(
-                humanoidRootPart.Position + CameraMods.CameraOffset
-            ) * currentRotation
+            
+            -- Calculer la nouvelle position avec l'offset
+            local cameraPosition = humanoidRootPart.Position + CameraMods.CameraOffset
+            
+            -- Appliquer la nouvelle position en préservant la rotation
+            Workspace.CurrentCamera.CFrame = CFrame.new(cameraPosition) * currentRotation
             
             -- Appliquer le FOV
             Workspace.CurrentCamera.FieldOfView = CameraMods.FOV
@@ -72,11 +70,11 @@ local function DisableCameraMods()
         CameraMods.Connection = nil
     end
     
-    if CameraMods.CameraType then
-        Workspace.CurrentCamera.CameraType = CameraMods.CameraType
-    end
-    
+    -- Restaurer le FOV
     Workspace.CurrentCamera.FieldOfView = CameraMods.OriginalFOV
+    
+    -- Ne PAS restaurer le CameraType pour ne pas casser shift lock
+    -- La caméra reste à sa position actuelle qui sera réinitialisée par le jeu
     
     print("[CameraMods] Désactivé")
 end
@@ -86,12 +84,22 @@ function CameraMods.SetOffset(offset)
     CameraMods.CameraOffset = offset
 end
 
+-- Fonction pour obtenir l'offset actuel
+function CameraMods.GetOffset()
+    return CameraMods.CameraOffset
+end
+
 -- Fonction pour définir le FOV
 function CameraMods.SetFOV(fov)
     CameraMods.FOV = fov
     if CameraMods.Enabled then
         Workspace.CurrentCamera.FieldOfView = fov
     end
+end
+
+-- Fonction pour obtenir le FOV actuel
+function CameraMods.GetFOV()
+    return CameraMods.FOV
 end
 
 -- Fonction pour déplacer la caméra
